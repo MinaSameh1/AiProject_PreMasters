@@ -1,10 +1,11 @@
 import os
 from flask import Flask, render_template, request, url_for, flash, redirect
 from werkzeug.utils import secure_filename
+from BusinessLayer.OCR import Reader
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = "F:\\mezo\\pre-master\\AdvancedAI\\project\\uploaded_files"
+UPLOAD_FOLDER = "OCR\\uploads"
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 # app = Flask(__name__)
@@ -41,7 +42,11 @@ def index():
             # return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            filePath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filePath)
             result = filename + " uploaded"
+            r = Reader()
+            text = r.read(filePath)
+            result += "text:\n" + text
             # return redirect(url_for('download_file', name=filename))
     return render_template('index.html', result=result)
