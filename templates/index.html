@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
-        <title>OpenCV OCR text recognition</title>
-    </head>
-    <body>
-       <h1>OpenCV OCR text recognition</h1>
-       <form enctype="multipart/form-data" action="/" method="post">
-       Image File: <input type="file" name="img1" id="img1">
-       <br>
-       <input type="submit" value="recognize" name="btn1">
-       </form>
-        <br>
-        {{result}}
-    </body>
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename= 'css/style.css') }}"
+    />
+    <title>OpenCV OCR text recognition</title>
+  </head>
+  <body>
+    <h1>OpenCV OCR text recognition</h1>
+    <form enctype="multipart/form-data" action="/" method="post">
+      Image File: <input type="file" name="img1" id="img1" />
+      <br />
+      <input type="submit" value="recognize" name="btn1" />
+    </form>
+    <br />
+    {{result}}
+  </body>
 </html>
