@@ -8,14 +8,22 @@
     />
     <title>OpenCV OCR text recognition</title>
   </head>
+
   <body>
     <h1>OpenCV OCR text recognition</h1>
     <form enctype="multipart/form-data" action="/" method="post">
-      Image File: <input type="file" name="img1" id="img1" />
+      Image File: <input type="file" name="img" id="img" />
       <br />
       <input type="submit" value="recognize" name="btn1" />
     </form>
     <br />
-    {{result}}
+    {% if result %}
+    <textarea rows="10" cols="50">
+      {{ result }}
+  </textarea
+    >
+    {% endif %} {% if error %}
+    <p style="color: red">Error: {{ error }}</p>
+    {% endif %}
   </body>
 </html>
