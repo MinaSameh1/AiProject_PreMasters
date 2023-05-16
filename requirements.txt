@@ -5,3 +5,9 @@ Pillow==9.5.0
 
 # Testing
 pytest==7.3.1
+
+opencv-python~=4.7.0.72
+numpy~=1.24.3
+pandas~=2.0.1
+mltu~=1.0.8
+tqdm~=4.65.0
