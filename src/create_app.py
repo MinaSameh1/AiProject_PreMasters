@@ -3,10 +3,11 @@ Responsible for creating the Flask app and loading the configuration.
 Mainly used to make the app testable.
 """
 import logging
-from logging.config import dictConfig
 import sys
+from logging.config import dictConfig
 
-from flask import Flask, helpers, render_template, request
+from flask import Flask
+
 
 def create_app(debug: bool = False):
     dictConfig({

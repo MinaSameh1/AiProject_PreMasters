@@ -1,16 +1,12 @@
 # Import required packages
-from PIL import Image
-import pytesseract
+
+import typing
 
 import cv2
-import typing
 import numpy as np
-
-from mltu.inferenceModel import OnnxInferenceModel
-from mltu.utils.text_utils import ctc_decoder, get_cer
-import pandas as pd
-from tqdm import tqdm
 from mltu.configs import BaseModelConfigs
+from mltu.inferenceModel import OnnxInferenceModel
+from mltu.utils.text_utils import ctc_decoder
 
 
 class ImageToWordModel(OnnxInferenceModel):

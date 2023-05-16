@@ -1,6 +1,7 @@
 # Import app from src
-from src import server
 import os
+
+from src import server
 
 port = int(os.environ.get('PORT', 5000))
 
