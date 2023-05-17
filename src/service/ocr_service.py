@@ -26,10 +26,11 @@ class ImageToWordModel(OnnxInferenceModel):
 
 
 def read_image(filepath):
-    # pytesseract.pytesseract.tesseract_cmd = "F:\\Program Files\\Tesseract-OCR\\tesseract.exe"
-    # text = pytesseract.image_to_string(Image.open(file))
     image = cv2.imread(filepath, cv2.IMREAD_COLOR)
-    pytesseract.pytesseract.tesseract_cmd = "F:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+    # IMPORTANT TO DEVELOPERS:
+    # set the folder to pytesseract in PATH environment variable otherwise you will need to explicitly
+    # set the path to tesseract.exe like:
+    # pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
     text = pytesseract.image_to_string(image)
 
     if len(text) <= 0:
