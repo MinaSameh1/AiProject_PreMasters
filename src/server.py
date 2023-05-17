@@ -6,6 +6,8 @@ from werkzeug.utils import secure_filename
 from src import main_module
 from src.service import ocr_service
 from src.utils import status
+import numpy
+import cv2
 
 debug = True if os.getenv("DEBUG") else False
 
@@ -36,14 +38,18 @@ def index():
 
 @app.route('/', methods=['POST'])
 def image_ocr():
+    breakpoint()
     file = request.files['img']
     # If the user does not select a file, the browser submits an
     # empty file without a filename.
     if not file: 
         error = 'No selected file'
         return render_template('index.html', error=error), status.http_codes["HTTP_400_BAD_REQUEST"]
+
+    file_bytes = numpy.fromfile(file, numpy.uint8)
+
     # check file size
-    if len(file.read()) > 1024 * 1024 * 10:
+    if len(file_bytes) > 1024 * 1024 * 10:
         error = 'File size exceeded 10MB'
         return render_template('index.html', error=error), status.http_codes["HTTP_413_REQUEST_ENTITY_TOO_LARGE"]
     # Check file name
@@ -55,11 +61,16 @@ def image_ocr():
         error = 'Filename or extention not allowed'
         return render_template('index.html', error=error), status.http_codes["HTTP_415_UNSUPPORTED_MEDIA_TYPE"]
     # Clean filename
-    filename = secure_filename(file.filename)
+    # filename = secure_filename(file.filename)
+    # file.save("OCR\\uploads\\" + filename)
+
+    print(f"\n Size:{file_bytes.size}")
+    # convert numpy array to image
+    img = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE)
     # Header to display
-    header = filename + " uploaded"
+    header = file.filename + " uploaded"
     # Read image
-    text, found = ocr_service.read_image(file)
+    text, found = ocr_service.read_image(img)
     # check if text is found
     # NOTE: text is empty if no text is found
     result = "Text:\n" + text if found else "No text found, please try again with another image."
@@ -88,6 +99,10 @@ def api_image_ocr():
         error = 'Filename or extention not allowed'
         return error, status.http_codes["HTTP_415_UNSUPPORTED_MEDIA_TYPE"]
     # Read image
+    # filePath = os.path.join("OCR\\uploads", file.filename)
+    # file.save(filePath)
+    breakpoint()
+    file_bytes = numpy.fromfile(request.files['image'], numpy.uint8)
     text, found = ocr_service.read_image(file)
     # check if text is found
     if not found:
