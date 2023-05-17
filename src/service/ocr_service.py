@@ -39,4 +39,5 @@ def read_image(filepath):
         print(f"\nconfigs.model_path:{configs.model_path}, char_list:{configs.vocab}")
         text = model.predict(image)
 
+
     return text, len(text) > 0
