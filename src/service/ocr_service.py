@@ -10,6 +10,7 @@ import numpy as np
 from mltu.configs import BaseModelConfigs
 from mltu.inferenceModel import OnnxInferenceModel
 from mltu.utils.text_utils import ctc_decoder
+import Trainning.simpleHTRInference
 
 
 class ImageToWordModel(OnnxInferenceModel):
@@ -34,10 +35,15 @@ def read_image(filepath):
     text = pytesseract.image_to_string(image)
 
     if len(text) <= 0:
+        '''
         configs = BaseModelConfigs.load("Models/202301111911/configs.yaml")
         model = ImageToWordModel(model_path=configs.model_path, char_list=configs.vocab)
         print(f"\nconfigs.model_path:{configs.model_path}, char_list:{configs.vocab}")
         text = model.predict(image)
+        '''
+        lst, found, probability = Trainning.simpleHTRInference.infer(filepath)
+        if len(lst) > 0:
+            text = lst[0]
 
 
     return text, len(text) > 0
