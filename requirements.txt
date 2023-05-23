@@ -3,10 +3,18 @@ flask==2.3.2
 Werkzeug==2.3.4
 Pillow==9.5.0
 opencv-python~=4.7.0.72
-numpy~=1.24.3
+numpy~=1.23.5
 pandas~=2.0.1
 mltu~=1.0.8
 tqdm~=4.65.0
 
 # Testing
 pytest==7.3.1
+
+keras~=2.12.0
+tensorflow~=2.12.0
+
+editdistance==0.5.2
+lmdb==1.0.0
+matplotlib==3.2.1
+path==15.0.0

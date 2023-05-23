@@ -7,6 +7,7 @@ from src import main_module
 from src.service import ocr_service
 from src.utils import status
 import numpy
+import Trainning.simpleHTRInference
 import cv2
 
 debug = True if os.getenv("DEBUG") else False
@@ -41,7 +42,7 @@ def image_ocr():
     file = request.files['img']
     # If the user does not select a file, the browser submits an
     # empty file without a filename.
-    if not file: 
+    if not file:
         error = 'No selected file'
         return render_template('index.html', error=error), status.http_codes["HTTP_400_BAD_REQUEST"]
 
@@ -82,7 +83,7 @@ def api_image_ocr():
     file = request.files['img']
     # If the user does not select a file, the browser submits an
     # empty file without a filename.
-    if not file: 
+    if not file:
         error = 'No selected file, key must be img'
         return error, status.http_codes["HTTP_400_BAD_REQUEST"]
     # check file size
@@ -94,11 +95,12 @@ def api_image_ocr():
         error = 'Filename or extention not allowed'
         return error, status.http_codes["HTTP_415_UNSUPPORTED_MEDIA_TYPE"]
     # Read image
-    # filePath = os.path.join("OCR\\uploads", file.filename)
-    # file.save(filePath)
-    breakpoint()
-    file_bytes = numpy.fromfile(request.files['image'], numpy.uint8)
-    text, found = ocr_service.read_image(file)
+    file_path = os.path.join("OCR\\uploads", file.filename)
+    file.save(file_path)
+    # breakpoint()
+    # file_bytes = numpy.fromfile(request.files['image'], numpy.uint8)
+    # text, found = ocr_service.read_image(file)
+    text, found, probability = Trainning.simpleHTRInference.infer(file_path)
     # check if text is found
     if not found:
         return "No text found, please try again with another image.", status.http_codes["HTTP_409_CONFLICT"]
