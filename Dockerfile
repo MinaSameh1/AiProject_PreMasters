@@ -19,4 +19,6 @@ EXPOSE 8000
 
 # Run app.py when the container launches
 # use wsgi server
-CMD ["python", "app.py"]
+# cd /app
+WORKDIR /app/src
+CMD ["flask", "run"]
