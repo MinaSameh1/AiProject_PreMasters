@@ -6,7 +6,7 @@ import cv2
 # import editdistance
 from path import Path
 
-# from dataloader_iam import DataLoaderIAM, Batch
+from Trainning.dataloader_iam import DataLoaderIAM, Batch
 from Trainning.model import Model, DecoderType
 from Trainning.preprocessor import Preprocessor
 
