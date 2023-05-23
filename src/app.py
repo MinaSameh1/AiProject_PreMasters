@@ -200,7 +200,7 @@ def api_image_ocr():
         # Apply OCR on the cropped image
         text = pytesseract.image_to_string(cropped)
         if len(text) > 0:
-            output += text + "\n"
+            output += text + " "
             img_cv2 = cv2.rectangle(
                 img_cv2, (x, y), (x + w, y + h), (0, 255, 0), 2
             )
