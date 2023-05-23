@@ -1,3 +1,4 @@
+import base64
 import logging
 import os
 import sys
@@ -114,22 +115,49 @@ def api_image_ocr():
     if not file:
         error = 'No selected file, key must be img'
         return error, status.http_codes["HTTP_400_BAD_REQUEST"]
+    file_content = file.read()
     # check file size
-    if len(file.read()) > 1024 * 1024 * 10:
+    if len(file_content) > 1024 * 1024 * 10:
         error = 'File size exceeded 10MB'
         return error, status.http_codes["HTTP_413_REQUEST_ENTITY_TOO_LARGE"]
+    if len(file_content) == 0:
+        error = 'File is empty'
+        return error, status.http_codes["HTTP_400_BAD_REQUEST"]
     # Check file extention
     if not allowed_file(file.filename):
         error = 'Filename or extention not allowed'
         return error, status.http_codes["HTTP_415_UNSUPPORTED_MEDIA_TYPE"]
-    # Read image
-    nparr = np.frombuffer(file.read(), np.uint8)
-    image = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
-    text = pytesseract.image_to_string(image)
+    # Convert file object to byte stream
+    file_bytes = np.asarray(bytearray(file_content), dtype=np.uint8)
+
+    # Decode byte stream into cv2 image
+    img_cv2 = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+
+    # Convert the image to grayscale
+    gray = cv2.cvtColor(img_cv2, cv2.COLOR_BGR2GRAY)
+
+    # Apply thresholding to convert the image to binary
+    _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+    # Find contours in the binary image
+    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Draw a rectangle around each contour
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        roi = binary[y:y+h, x:x+w]
+        text = pytesseract.image_to_string(roi)
+        if len(text.strip()) > 0:
+            img_cv2 = cv2.rectangle(img_cv2, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+    text = pytesseract.image_to_string(img_cv2)
     # check if text is found
     if len(text) > 0:
-        # Return result
-        return text, status.http_codes["HTTP_200_OK"]
+        # Encode the processed image as a base64 string
+        _, img_encoded = cv2.imencode('.png', img_cv2)
+        img_base64 = base64.b64encode(img_encoded).decode('utf-8')
+        # Return result as json
+        return {'text': text, 'image': img_base64}, status.http_codes["HTTP_200_OK"]
     return "No text found, please try again with another image.", status.http_codes["HTTP_409_CONFLICT"]
 
 port = int(os.environ.get('PORT', 5000))

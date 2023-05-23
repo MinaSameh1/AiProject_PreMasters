@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename= 'css/style.css') }}"
@@ -9,21 +10,294 @@
     <title>OpenCV OCR text recognition</title>
   </head>
 
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #333;
+      color: #fff;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    nav {
+      background-color: #f2f2f2;
+      border-bottom: 1px solid #ccc;
+      padding: 1rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    label {
+      margin-bottom: 0.5rem;
+    }
+
+    input[type="file"] {
+      margin-bottom: 1rem;
+    }
+
+    button[type="submit"] {
+      background-color: #333;
+      border: none;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+
+    main {
+      margin: 1rem;
+    }
+
+    h2 {
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    footer {
+      background-color: #333;
+      color: #fff;
+      padding: 1rem;
+      text-align: center;
+    }
+    input[type="file"] {
+      display: none;
+    }
+
+    .custom-file-upload {
+      border: 1px solid #ccc;
+      display: inline-block;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+
+    .custom-file-upload:hover {
+      background-color: #f2f2f2;
+    }
+
+    .submit {
+      background-color: #4caf50;
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .submit:hover {
+      background-color: #3e8e41;
+    }
+    ul {
+      list-style: none;
+    }
+    textarea {
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .column {
+      flex: 50%;
+      padding: 10px;
+    }
+    #text {
+      white-space: pre-wrap;
+    }
+
+    .d-none {
+      display: none;
+    }
+
+    .spinner-border {
+      display: inline-block;
+      width: 1.5rem;
+      height: 1.5rem;
+      vertical-align: text-bottom;
+      border: 0.25em solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      -webkit-animation: spinner-border 0.75s linear infinite;
+      animation: spinner-border 0.75s linear infinite;
+    }
+
+    @-webkit-keyframes spinner-border {
+      to {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes spinner-border {
+      to {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+      }
+    }
+
+    .spinner-border-sm {
+      width: 1rem;
+      height: 1rem;
+      border-width: 0.2em;
+    }
+
+    .ml-2 {
+      margin-left: 0.5rem !important;
+    }
+  </style>
   <body>
-    <h1>OpenCV OCR text recognition</h1>
-    <form enctype="multipart/form-data" action="/" method="post">
-      Image File: <input type="file" name="img" id="img" />
+    <main>
+      <h1>OpenCV OCR text recognition</h1>
+      <form enctype="multipart/form-data">
+        <label for="img" class="custom-file-upload">Select an Image</label>
+        <input
+          type="file"
+          name="img"
+          id="img"
+          onchange="previewImage(event)"
+          accept="image/*"
+        />
+        <br />
+        <button type="submit" id="btn1" name="btn1" class="submit">Recognize</button>
+        <br />
+        <br />
+        <textarea
+          rows="10"
+          cols="50"
+          id="output"
+          readonly
+          style="display: none"
+        >
+        </textarea>
+        <br />
+        <div class="row">
+          <div class="column">
+            <img src="" id="image-preview" alt="Image Preview" width="400"
+            style="display: none;"
+            />
+          </div>
+          <div class="column">
+            <img id="image" width="400" />
+          </div>
+        </div>
+      </form>
       <br />
-      <input type="submit" value="recognize" name="btn1" />
-    </form>
-    <br />
-    {% if result %}
-    <textarea rows="10" cols="50" readonly>
-      {{ result }}
-  </textarea
-    >
-    {% endif %} {% if error %}
-    <p style="color: red">Error: {{ error }}</p>
-    {% endif %}
+    </main>
+    <footer>
+      <p>&copy; 2023 Cairo University Team 1</p>
+      <ul>
+        <li>Mina Sameh</li>
+        <li>Mohammed Heider</li>
+        <li>Moataz Mostafa</li>
+        <li>Rawam Khaled</li>
+      </ul>
+    </footer>
+
+    <script>
+      function previewImage(event) {
+        const input = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          const previewElement = document.getElementById("image-preview");
+          previewElement.style.display = "block";
+          previewElement.src = e.target.result;
+        };
+
+        reader.readAsDataURL(input);
+      }
+
+      const loadingSpinner = document.createElement("span");
+      loadingSpinner.classList.add(
+        "spinner-border",
+        "spinner-border-sm",
+        "ml-2",
+        "d-none"
+      );
+
+      document.addEventListener("DOMContentLoaded", function () {
+        document
+          .querySelector(".submit")
+          .addEventListener("click", function (e) {
+            e.preventDefault();
+            const submitButton = document.getElementById("btn1");
+            submitButton.disabled = true; // disable the submit button
+            submitButton.innerHTML = "Running..."; // change the text of the submit button
+            loadingSpinner.classList.remove("d-none"); // show the loading spinner
+            submitButton.appendChild(loadingSpinner); // append the loading spinner to the submit button
+
+            const input = document.getElementById("img").files[0];
+            const formData = new FormData();
+            formData.append("img", input);
+
+            fetch("/api", {
+              method: "POST",
+              body: formData,
+            })
+              .then((res) => {
+                switch (res.status) {
+                  case 200:
+                    return res.json();
+                    break;
+                  case 400:
+                    alert("Bad request");
+                    break;
+                  case 413:
+                    alert("Image too large");
+                    break;
+                  case 415:
+                    alert("Unsupported media type");
+                    break;
+                  case 409:
+                    alert("No text found");
+                    break;
+                  case 500:
+                    alert("Internal server error, Please try again");
+                    break;
+                }
+                return res.text();
+              })
+              .then((res) => {
+                console.log(res);
+                document.getElementById("output").innerHTML = res.text;
+                document.getElementById("output").style.display = "block";
+                // display base64 image in the browser under the text using div id cv-image
+                document.getElementById("image").src =
+                  "data:image/png;base64," + res.image;
+                submitButton.disabled = false; // re-enable the submit button
+                submitButton.innerHTML = "Recognize"; // change the text of the submit button back to its original value
+                loadingSpinner.classList.add("d-none"); // hide the loading spinner
+              })
+              .catch((error) => {
+                alert("Error, something went wrong, please try again");
+                submitButton.disabled = false; // re-enable the submit button
+                submitButton.innerHTML = "Submit"; // change the text of the submit button back to its original value
+                loadingSpinner.classList.add("d-none"); // hide the loading spinner
+
+                console.error(error);
+              });
+          });
+      });
+    </script>
   </body>
 </html>
