@@ -1,20 +1,49 @@
+import logging
 import os
+import sys
+from logging.config import dictConfig
 
-from flask import render_template, request
+import cv2
+import numpy as np
+import pytesseract
+from flask import Flask, render_template, request
+from PIL import Image
 from werkzeug.utils import secure_filename
 
-from src import main_module
-from src.service import ocr_service
-from src.utils import status
-import numpy
-import Trainning.simpleHTRInference
-import cv2
+from utils import status
+
+
+def create_app(debug: bool = False):
+    """
+    Responsible for creating the Flask app and loading the configuration.
+    """
+    dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': debug and 'DEBUG' or 'INFO',
+        'handlers': ['wsgi']
+    }
+    })
+    app = Flask(__name__)
+    handler = logging.StreamHandler(sys.stdout)
+    app.logger.addHandler(handler)
+    app.debug = debug
+    return app
+
 
 debug = True if os.getenv("DEBUG") else False
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
-app = main_module.create_app(debug=debug)
+app = create_app(debug=debug)
 
 # Catch all other routes and return 404
 @app.errorhandler(404)
@@ -60,16 +89,15 @@ def image_ocr():
     if not allowed_file(file.filename):
         error = 'Filename or extention not allowed'
         return render_template('index.html', error=error), status.http_codes["HTTP_415_UNSUPPORTED_MEDIA_TYPE"]
-    # Clean filename
-    filename = secure_filename(file.filename)
-    file.save(f"OCR/uploads/{filename}")
     # Header to display
     header = file.filename + " uploaded"
     # Read image
-    text, found = ocr_service.read_image(f"OCR/uploads/{filename}")
+    nparr = np.frombuffer(file.read(), np.uint8)
+    image = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+    text = pytesseract.image_to_string(image)
     # check if text is found
     # NOTE: text is empty if no text is found
-    result = "Text:\n" + text if found else "No text found, please try again with another image."
+    result = "Text:\n" + text if len(text) > 0 else "No text found, please try again with another image."
     # Return result
     return render_template('index.html', result=result, header=header), status.http_codes["HTTP_200_OK"]
 
@@ -95,14 +123,18 @@ def api_image_ocr():
         error = 'Filename or extention not allowed'
         return error, status.http_codes["HTTP_415_UNSUPPORTED_MEDIA_TYPE"]
     # Read image
-    file_path = os.path.join("OCR\\uploads", file.filename)
-    file.save(file_path)
-    # breakpoint()
-    # file_bytes = numpy.fromfile(request.files['image'], numpy.uint8)
-    # text, found = ocr_service.read_image(file)
-    text, found, probability = Trainning.simpleHTRInference.infer(file_path)
+    nparr = np.frombuffer(file.read(), np.uint8)
+    image = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+    text = pytesseract.image_to_string(image)
     # check if text is found
-    if not found:
-        return "No text found, please try again with another image.", status.http_codes["HTTP_409_CONFLICT"]
-    # Return result
-    return text, status.http_codes["HTTP_200_OK"]
+    if len(text) > 0:
+        # Return result
+        return text, status.http_codes["HTTP_200_OK"]
+    return "No text found, please try again with another image.", status.http_codes["HTTP_409_CONFLICT"]
+
+port = int(os.environ.get('PORT', 5000))
+
+# Run app
+if __name__ == '__main__':
+    print('Running app on port: ' + str(port)) 
+    app.run(debug=True, port=port)
